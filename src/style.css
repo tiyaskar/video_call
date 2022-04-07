@@ -159,8 +159,8 @@
   /* background-color: red; */
   /* color: white; */
   border: none;
-  margin-left: auto;
-  margin-right: auto;
+  /* margin-left: 40%; */
+  margin-right: 50%;
   margin-bottom: 16px;
 }
 #stop-video {
@@ -171,5 +171,6 @@
   /* background-color: red; */
   /* color: white; */
   border: none;
-  margin: 16px;
+  margin-right: 40%;
+  margin-bottom: 16px;
 }

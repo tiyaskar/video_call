@@ -35,7 +35,7 @@ const getAuthenticateUser = () => {
 //     });
 // }
 const getAllCollection = async () => {
-    const snapshot = await db.collection('items_list').get();
+    const snapshot = await db.collection('frienduser').get();
     console.log('snapshot==>', snapshot);
     return snapshot.docs.map(doc => {
         let rObj = {}

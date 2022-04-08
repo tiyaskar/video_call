@@ -35,6 +35,7 @@
 .main__controls {
   position: absolute;
   bottom: 0;
+  margin-bottom: 30px;
   left: 0;
   width: 100%;
   color: #d2d2d2;
@@ -148,7 +149,7 @@
   background-color: red;
   color: white;
   border: none;
-  margin: 16px;
+  margin: 40px;
 }
 #mute-call {
   position: absolute;
@@ -161,7 +162,7 @@
   border: none;
   /* margin-left: 40%; */
   margin-right: 50%;
-  margin-bottom: 16px;
+  margin-bottom: 40px;
 }
 #stop-video {
   position: absolute;
@@ -171,6 +172,6 @@
   /* background-color: red; */
   /* color: white; */
   border: none;
-  margin-right: 40%;
-  margin-bottom: 16px;
+  margin-right: 43%;
+  margin-bottom: 40px;
 }

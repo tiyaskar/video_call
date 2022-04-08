@@ -12,7 +12,7 @@ function App() {
   const [c, setc] = useState(null);
   const [a, setA] = useState(false);
   const [b, setB] = useState(false);
-  const [d, setD] = useState(true);
+  const [d, setD] = useState(false);
   const [disp, setDisp] = useState(true);
   const [items, setItems] = useState("");
   const [peerId, setPeerId] = useState("");
@@ -38,18 +38,19 @@ function App() {
     peer.on("open", (id) => {
       setPeerId(id);
 
-      // var getUserMedia =
-      //   navigator.getUserMedia ||
-      //   navigator.webkitGetUserMedia ||
-      //   navigator.mozGetUserMedia;
-      // setDisp(true);
-      // setB(true);
-      // getUserMedia({ video: true, audio: false }, (mediaStream) => {
-      //   setS(mediaStream);
-      //   // mediaStream.getVideoTracks()[0].enabled = a;
-      //   currentUserVideoRef.current.srcObject = mediaStream;
-      //   currentUserVideoRef.current.play();
-      // });
+      var getUserMedia =
+        navigator.getUserMedia ||
+        navigator.webkitGetUserMedia ||
+        navigator.mozGetUserMedia;
+      setDisp(true);
+      setB(true);
+      getUserMedia({ video: true, audio: false }, (mediaStream) => {
+        setS(mediaStream);
+        mediaStream.getVideoTracks()[0].enabled = false;
+        console.log(d);
+        currentUserVideoRef.current.srcObject = mediaStream;
+        currentUserVideoRef.current.play();
+      });
     });
 
     peer.on("call", (call) => {
@@ -61,8 +62,8 @@ function App() {
           navigator.mozGetUserMedia;
         setDisp(false);
         // setDisp1('block')
-        // setA(true);
-        // setB(true);
+        // setA(true)
+        // setB(true)
         setCurrentCall(call);
         getUserMedia({ video: true, audio: true }, (mediaStream) => {
           setS(mediaStream);
@@ -138,15 +139,41 @@ function App() {
     console.log(a);
     peerInstance.current = peer;
   }, []);
+  const stopCamera = () => {
+    setD(false);
+    s.getVideoTracks()[0].enabled = false;
+    // const video = container.querySelector('.video-streamer');
+
+    // for (const track of s.getTracks()) {
+    //   if (track.readyState == "live" && track.kind === "video") {
+    //     track.stop();
+    //   }
+    // }
+    // setS(null);
+  };
+  const startCamera = () => {
+    setD(true);
+    console.log(d)
+    s.getVideoTracks()[0].enabled = true;
+    // var getUserMedia =
+    //   navigator.getUserMedia ||
+    //   navigator.webkitGetUserMedia ||
+    //   navigator.mozGetUserMedia;
+    // setDisp(true);
+    // // setB(true);
+    // getUserMedia({ video: true, audio: false }, (mediaStream) => {
+    //   setS(mediaStream);
+    //   // mediaStream.getVideoTracks()[0].enabled = a;
+    //   currentUserVideoRef.current.srcObject = mediaStream;
+    //   currentUserVideoRef.current.play();
+    // });
+  };
   const getData = async () => {
     let records = await firebaseService.getAllCollection();
     setItems(records);
     console.log(records);
   };
   const call = (remotePeerId) => {
-    if (s === null) {
-      startCamera();
-    }
     var conn = peerInstance.current.connect(remotePeerId);
     setc(conn);
     var getUserMedia =
@@ -156,8 +183,8 @@ function App() {
     setDisp(false);
     // setDisp1('block')
     // console.log(disp," ", disp1)
-    // setA(true);
-    // setB(true);
+// setA(true);
+// setB(true)
     getUserMedia({ video: true, audio: true }, (mediaStream) => {
       // mediaStream.getAudioTracks()[0].enabled = false;
       setS(mediaStream);
@@ -192,56 +219,11 @@ function App() {
     // a ? setA(false) : setA(true);
     console.log(a);
   };
-  const stopCamera = () => {
-    setD(true);
-    // const video = container.querySelector('.video-streamer');
-
-    for (const track of s.getTracks()) {
-      if (track.readyState == "live" && track.kind === "video") {
-        track.stop();
-      }
-    }
-    // setS(null);
+  const defaultvideoOff = () => {
+    setD(!d);
+    // s.getVideoTracks()[0].enabled = b;
+    console.log(d);
   };
-  const startCamera = () => {
-    setD(false);
-    var getUserMedia =
-      navigator.getUserMedia ||
-      navigator.webkitGetUserMedia ||
-      navigator.mozGetUserMedia;
-    setDisp(true);
-    // setB(true);
-    getUserMedia({ video: true, audio: false }, (mediaStream) => {
-      setS(mediaStream);
-      // mediaStream.getVideoTracks()[0].enabled = a;
-      currentUserVideoRef.current.srcObject = mediaStream;
-      currentUserVideoRef.current.play();
-    });
-  };
-  function stopVideoOnly() {
-    setB(true);
-    s.getTracks().forEach(function (track) {
-      if (track.readyState == "live" && track.kind === "video") {
-        track.stop();
-      }
-    });
-    // setS(null)
-  }
-  function startVideoOnly() {
-    setB(false);
-    var getUserMedia =
-      navigator.getUserMedia ||
-      navigator.webkitGetUserMedia ||
-      navigator.mozGetUserMedia;
-    // setDisp(true);
-    setB(true);
-    getUserMedia({ video: true, audio: true }, (mediaStream) => {
-      setS(mediaStream);
-      // mediaStream.getVideoTracks()[0].enabled = a;
-      currentUserVideoRef.current.srcObject = mediaStream;
-      currentUserVideoRef.current.play();
-    });
-  }
   const videoOff = () => {
     setB(true);
     s.getVideoTracks()[0].enabled = false;
@@ -336,7 +318,14 @@ function App() {
                   <i className="fas fa-microphone"></i>
                   <span>Mute</span>
                 </div> */}
-                {d === false ? (
+                {/* <div
+                  onClick={videoOff}
+                  className="main__controls__button main__video_button"
+                >
+                  <i className="fas fa-video"></i>
+                  <span>Stop Video</span>
+                </div> */}
+                {d ? (
                   <div
                     onClick={stopCamera}
                     className="main__controls__button main__video_button"
@@ -383,11 +372,11 @@ function App() {
                   <span>Call</span>
                 </div>
               </div>
-              {/* <div class="main__controls__block" onClick={endCall}>
+              <div class="main__controls__block" onClick={endCall}>
                 <div class="main__controls__button">
                   <span class="leave_meeting">Leave Meeting</span>
                 </div>
-              </div> */}
+              </div>
             </div>
           </>
         ) : (
@@ -415,7 +404,7 @@ function App() {
             <button id="mute-call" onClick={audioOn} style={{padding: "20px", borderRadius: "50%"}}>
               <i className="fas fa-microphone-slash" style={{fontSize: "24px"}}></i>
             </button>}
-            {b === false ? (
+            {b=== false? (
               <button id="stop-video" onClick={videoOff} style={{padding: "20px", borderRadius: "50%"}}>
                 <i className="fas fa-video" style={{fontSize: "24px"}}></i>
               </button>

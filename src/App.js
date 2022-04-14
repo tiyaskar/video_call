@@ -28,6 +28,45 @@ function App() {
         host: "65.2.40.26",
         port: 9000,
         path: "/videocallapp",
+        // debug: 3,
+        // config: {
+        //   iceServers: [
+        //     // { url: "stun:stun01.sipphone.com" },
+        //     // { url: "stun:stun.ekiga.net" },
+        //     // { url: "stun:stun.fwdnet.net" },
+        //     // { url: "stun:stun.ideasip.com" },
+        //     // { url: "stun:stun.iptel.org" },
+        //     // { url: "stun:stun.rixtelecom.se" },
+        //     // { url: "stun:stun.schlund.de" },
+        //     // { url: "stun:stun.l.google.com:19302" },
+        //     { url: "stun:stun1.l.google.com:19302" },
+        //     // { url: "stun:stun2.l.google.com:19302" },
+        //     // { url: "stun:stun3.l.google.com:19302" },
+        //     // { url: "stun:stun4.l.google.com:19302" },
+        //     // { url: "stun:stunserver.org" },
+        //     // { url: "stun:stun.softjoys.com" },
+        //     // { url: "stun:stun.voiparound.com" },
+        //     // { url: "stun:stun.voipbuster.com" },
+        //     // { url: "stun:stun.voipstunt.com" },
+        //     // { url: "stun:stun.voxgratia.org" },
+        //     // { url: "stun:stun.xten.com" },
+        //     {
+        //       url: "turn:numb.viagenie.ca",
+        //       credential: "muazkh",
+        //       username: "webrtc@live.com",
+        //     },
+        //     // {
+        //     //   url: "turn:192.158.29.39:3478?transport=udp",
+        //     //   credential: "JZEOEt2V3Qb0y27GRntt2u2PAYA=",
+        //     //   username: "28224511:1379330808",
+        //     // },
+        //     // {
+        //     //   url: "turn:192.158.29.39:3478?transport=tcp",
+        //     //   credential: "JZEOEt2V3Qb0y27GRntt2u2PAYA=",
+        //     //   username: "28224511:1379330808",
+        //     // },
+        //   ],
+        // },
       }
       // {
       //   host: 'localhost',
@@ -147,6 +186,11 @@ function App() {
     if (s === null) {
       startCamera();
     }
+    const userRef = firebase.database().ref();
+    userRef.child("users").child(remotePeerId).set({
+      incoming: "12345",
+      connId: remotePeerId,
+    });
     var conn = peerInstance.current.connect(remotePeerId);
     setc(conn);
     var getUserMedia =
@@ -165,17 +209,28 @@ function App() {
       currentUserVideoRef.current.play();
       const call = peerInstance.current.call(remotePeerId, mediaStream);
       setCurrentCall(call);
-      call.on("stream", (remoteStream) => {
-        remoteVideoRef.current.srcObject = remoteStream;
-        // remoteVideoRef.current.play();
-        const playPromise = remoteVideoRef.current.play();
+      try {
+        call.on("stream", (remoteStream) => {
+          remoteVideoRef.current.srcObject = remoteStream;
+          // remoteVideoRef.current.play();
+          const playPromise = remoteVideoRef.current.play();
 
-        if (playPromise !== null) {
-          playPromise.catch(() => {
-            /* discard runtime error */
-          });
-        }
-      });
+          if (playPromise !== null) {
+            playPromise.catch(() => {
+              /* discard runtime error */
+              // window.alert("Person you are trying to connect is not available")
+            });
+          }
+        });
+      } catch (e) {
+        window.alert("Person you are trying to connect is not available");
+
+        console.log(e);
+        window.location.reload(false);
+
+        // setDisp(true);
+        // stopCamera()
+      }
       // call.close();
     });
     console.log(remotePeerId);
@@ -319,11 +374,18 @@ function App() {
             <div className="row">
               <div className="col-sm-12">
                 <center>
-                  <video
-                    ref={currentUserVideoRef}
-                    style={{ paddingTop: "30px", paddingBottom: "30px" }}
-                    autoplay="false"
-                  />
+                  {d ? (
+                    <img
+                      src="https://i.ytimg.com/vi/8l06rW9klJI/hqdefault.jpg"
+                      style={{ maxWidth: "100%", maxHeight: "100%" }}
+                    />
+                  ) : (
+                    <video
+                      ref={currentUserVideoRef}
+                      style={{ paddingTop: "30px", paddingBottom: "30px" }}
+                      autoplay="false"
+                    />
+                  )}
                 </center>
               </div>
             </div>
@@ -349,7 +411,7 @@ function App() {
                     onClick={startCamera}
                     className="main__controls__button main__video_button"
                   >
-                    <i className="fas fa-video"></i>
+                    <i className="fas fa-video-slash"></i>
                     <span>Start Video</span>
                   </div>
                 )}
@@ -403,27 +465,71 @@ function App() {
           // </div>
           <div id="live">
             <video id="remote-video" ref={remoteVideoRef}></video>
-            <video
+            {/* {b ? (
+              <img
               id="local-video"
-              ref={currentUserVideoRef}
-              muted="true"
-            ></video>
-            {a=== false?<button id="mute-call" onClick={audioMute} style={{padding: "20px", borderRadius: "50%"}}>
-            <i className="fas fa-microphone" style={{fontSize: "24px"}}></i>
-            </button>
-            :
-            <button id="mute-call" onClick={audioOn} style={{padding: "20px", borderRadius: "50%"}}>
-              <i className="fas fa-microphone-slash" style={{fontSize: "24px"}}></i>
-            </button>}
+              src="https://i.ytimg.com/vi/8l06rW9klJI/hqdefault.jpg"
+              style={{ maxWidth: "100%", maxHeight: "100%" }}
+            />
+            ) : ( */}
+              <video
+                id="local-video"
+                ref={currentUserVideoRef}
+                muted="true"
+              ></video>
+            {/* )} */}
+            {a === false ? (
+              <button
+                id="mute-call"
+                onClick={audioMute}
+                style={{ width: "50px" }}
+                // style={{ padding: "20px", borderRadius: "50%" }}
+              >
+                <i
+                  className="fas fa-microphone"
+                  // style={{ fontSize: "24px" }}
+                ></i>
+              </button>
+            ) : (
+              <button
+                id="mute-call"
+                onClick={audioOn}
+                style={{ width: "50px" }}
+              >
+                <i class="fas fa-microphone-slash"></i>
+                {/* <i
+                  className="fas fa-microphone-slash"
+                  // style={{ fontSize: "24px" }}
+                ></i> */}
+              </button>
+            )}
             {b === false ? (
-              <button id="stop-video" onClick={videoOff} style={{padding: "20px", borderRadius: "50%"}}>
-                <i className="fas fa-video" style={{fontSize: "24px"}}></i>
+              <button
+                id="stop-video"
+                onClick={videoOff}
+                style={{ width: "50px" }}
+
+                // style={{ padding: "20px", borderRadius: "50%" }}
+              >
+                <i
+                  className="fas fa-video"
+                  // style={{ fontSize: "24px" }}
+                ></i>
               </button>
-             ) : (
-              <button id="stop-video" onClick={videoOn} style={{padding: "20px", borderRadius: "50%"}}>
-                <i className="fas fa-video-slash" style={{fontSize: "24px"}}></i>
+            ) : (
+              <button
+                id="stop-video"
+                onClick={videoOn}
+                style={{ width: "50px" }}
+
+                // style={{ padding: "20px", borderRadius: "50%" }}
+              >
+                <i
+                  className="fas fa-video-slash"
+                  // style={{ fontSize: "24px" }}
+                ></i>
               </button>
-            )} 
+            )}
             <button id="end-call" onClick={endCall}>
               End Call
             </button>

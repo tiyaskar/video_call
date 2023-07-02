@@ -40,7 +40,7 @@ jobs:
   deploy:
     docker:
       - image: circleci/python:3.9
-    resource_class: midium
+    resource_class: medium
     steps:
       - checkout
       - run:

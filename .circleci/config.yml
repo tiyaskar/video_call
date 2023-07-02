@@ -1,7 +1,7 @@
 ---
 version: 2.1
-orbs:
-  snyk: snyk/snyk@1.7.0
+# orbs:
+#   snyk: snyk/snyk@1.7.0
 jobs:
   build_and_push:
     docker:
@@ -19,14 +19,14 @@ jobs:
           when: on_success
           name: Build Image
           command: docker build -t ghcr.io/tiyaskar/video_call:${CIRCLE_BRANCH} .
-      - snyk/scan:
-          # when: on_success
-          fail-on-issues: true
-          monitor-on-build: true
-          docker-image-name: ghcr.io/tiyaskar/video_call:${CIRCLE_BRANCH}
-          target-file: "Dockerfile"
-          project: ${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}-app
-          # token-variable: ${SNYK_TOKEN}
+      # - snyk/scan:
+      #     # when: on_success
+      #     fail-on-issues: true
+      #     monitor-on-build: true
+      #     docker-image-name: ghcr.io/tiyaskar/video_call:${CIRCLE_BRANCH}
+      #     target-file: "Dockerfile"
+      #     project: ${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}-app
+      #     # token-variable: ${SNYK_TOKEN}
       - run:
           name: Authenticate with Docker Registry
           command: | 
@@ -37,8 +37,27 @@ jobs:
           name: Push Docker Image
           command: docker push  ghcr.io/tiyaskar/video_call:${CIRCLE_BRANCH}
           when: on_success
+  deploy:
+    docker:
+      - image: circleci/python:3.9
+    resource_class: midium
+    steps:
+      - checkout
       - run:
-          when: on_success
+          name: Install Ansible
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y ansible
+      - run:
+          echo "$SSH_PRIVATE_KEY" > /tmp/private_key
+          chmod 400 /tmp/private_key
+          anisible-playbook -i inventory.ini deploy.yml --private-key=/tmp/private_key --ssh-extra-args="-o StrictHostKeyChecking=no"
+  send_notification:
+    docker:
+      - image: cimg/python:3.9
+    steps:
+      - run:
+          name: Send Success Notification
           command: |
             curl --header "Content-Type: application/json" \
             --request POST \
@@ -46,21 +65,31 @@ jobs:
             "$CHAT_WEBHOOK"
       - run:
           when: on_fail
+          name: Send Failure Notification
           command: |
             curl --header "Content-Type: application/json" \
             --request POST \
             --data "{\"cards\":[{\"header\":{\"title\":\"Oops. ${CIRCLE_JOB} failed.\",\"subtitle\":\"${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BRANCH}\",\"imageUrl\":\"https://png.pngtree.com/svg/20170406/icon_failed__1325447.png\",\"imageStyle\":\"IMAGE\"},\"sections\":[{\"widgets\":[{\"keyValue\":{\"topLabel\":\"${CIRCLE_TAG}\",\"content\":\"Credits- ${CIRCLE_USERNAME}\"}}]},{\"widgets\":[{\"buttons\":[{\"textButton\":{\"text\":\"DETAILS\",\"onClick\":{\"openLink\":{\"url\":\"${CIRCLE_BUILD_URL}\"}}}}]}]}]}]}" \
             "$CHAT_WEBHOOK"
 
-
 workflows:
   version: 2
   build-deploy:
     jobs:
       - build_and_push
-      # - push:
-      #     requires:
-      #       - build
+      - deploy:
+          requires:
+            - build_and_push
+      - send_notification:
+          requires:
+            - build_and_push
+            - deploy
+          filters:
+            branches:
+              only: master
+            outcomes:
+              - success
+              - fail
 
 triggers:
   - event: push

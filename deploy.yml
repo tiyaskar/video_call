@@ -1,0 +1,12 @@
+---
+- hosts: test
+  gather_facts: false
+  tasks:
+    - name: Verify Server
+      command: "whoami"
+    - name: Get Server Info
+      command: "cat /etc/os-release"
+      register: cat
+    - name: Show Server Info
+      debug:
+        var: cat.stdout_lines

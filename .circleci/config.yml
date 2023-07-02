@@ -29,7 +29,7 @@ jobs:
           organization: ${SNYK_CICD_ORGANIZATION}
       - run:
           name: Authenticate with Docker Registry
-          command: |
+          command: | 
             echo "${DOCKER_TOKEN}" | docker login ${DOCKER_REGISTRY} -u "${DOCKER_USER}" --password-stdin
             echo "auth_success=true" >> $BASH_ENV
           when: on_success

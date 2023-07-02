@@ -16,7 +16,7 @@ jobs:
       - run:
           name: Authenticate with Docker Registry
           command: |
-            echo "${DOCKER_TOKEN}" | docker login -u "${DOCKER_USER}" --password-stdin
+            echo "${DOCKER_TOKEN}" | docker login ${DOCKER_REGISTRY} -u "${DOCKER_USER}" --password-stdin
             echo "auth_success=true" >> $BASH_ENV
       - run:
           name: Push Docker Image

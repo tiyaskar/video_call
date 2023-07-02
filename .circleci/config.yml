@@ -39,7 +39,7 @@ jobs:
           when: on_success
   deploy:
     docker:
-      - image: circleci/python:3.9
+      - image: cimg/python:3.9
     resource_class: medium
     steps:
       - checkout
@@ -49,9 +49,11 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y ansible
       - run:
-          echo "$SSH_PRIVATE_KEY" > /tmp/private_key
-          chmod 400 /tmp/private_key
-          anisible-playbook -i inventory.ini deploy.yml --private-key=/tmp/private_key --ssh-extra-args="-o StrictHostKeyChecking=no"
+          name: Execute Ansible Playbook
+          command: | 
+            echo "$SSH_PRIVATE_KEY" > /tmp/private_key
+            chmod 400 /tmp/private_key
+            anisible-playbook -i inventory.ini deploy.yml --private-key=/tmp/private_key --ssh-extra-args="-o StrictHostKeyChecking=no"
   send_notification:
     docker:
       - image: cimg/python:3.9

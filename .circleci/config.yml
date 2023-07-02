@@ -43,10 +43,10 @@ jobs:
       - image: cimg/base:stable
     resource_class: medium
     steps:
-      - ansible-playbook/run:
-          inventory: ../inventory.ini
-          playbook: ../deploy.yml
-          ssh-key: $SSH_PRIVATE_KEY
+      - ansible-playbook/playbook:
+          # inventory: inventory.ini 
+          playbook: deploy.yml 
+          # private-key: $SSH_PRIVATE_KEY 
   send_notification:
     docker:
       - image: cimg/python:3.9

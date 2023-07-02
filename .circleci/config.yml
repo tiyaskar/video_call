@@ -44,8 +44,8 @@ jobs:
     resource_class: medium
     steps:
       - ansible-playbook/run:
-          inventory: inventory.ini
-          playbook: deploy.yml
+          inventory: ../inventory.ini
+          playbook: ../deploy.yml
           ssh-key: $SSH_PRIVATE_KEY
   send_notification:
     docker:

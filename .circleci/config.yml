@@ -11,6 +11,10 @@ jobs:
           version: 20.10.14
           docker_layer_caching: true
       - run:
+          name: Test for node modules
+          command: npm i
+      - run:
+          when: on_success
           name: Build Image
           command: docker build -t ghcr.io/tiyaskar/video_call:${CIRCLE_BRANCH} .
       - run:
@@ -18,10 +22,25 @@ jobs:
           command: |
             echo "${DOCKER_TOKEN}" | docker login ${DOCKER_REGISTRY} -u "${DOCKER_USER}" --password-stdin
             echo "auth_success=true" >> $BASH_ENV
+          when: on_success
       - run:
           name: Push Docker Image
           command: docker push  ghcr.io/tiyaskar/video_call:${CIRCLE_BRANCH}
           when: on_success
+      - run:
+          when: on_success
+          command: |
+            curl --header "Content-Type: application/json" \
+            --request POST \
+            --data "{\"cards\":[{\"header\":{\"title\":\"${CIRCLE_JOB} successful.\",\"subtitle\":\"${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BRANCH}\",\"imageUrl\":\"https://png.pngtree.com/svg/20170510/success_404253.png\",\"imageStyle\":\"IMAGE\"},\"sections\":[{\"widgets\":[{\"keyValue\":{\"topLabel\":\"${CIRCLE_TAG}\",\"content\":\"Credits - ${CIRCLE_USERNAME}\"}}]},{\"widgets\":[{\"buttons\":[{\"textButton\":{\"text\":\"DETAILS\",\"onClick\":{\"openLink\":{\"url\":\"${CIRCLE_BUILD_URL}\"}}}}]}]}]}]}" \
+            "$CHAT_WEBHOOK"
+    - run:
+          when: on_fail
+          command: |
+            curl --header "Content-Type: application/json" \
+            --request POST \
+            --data "{\"cards\":[{\"header\":{\"title\":\"Oops. ${CIRCLE_JOB} failed.\",\"subtitle\":\"${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BRANCH}\",\"imageUrl\":\"https://png.pngtree.com/svg/20170406/icon_failed__1325447.png\",\"imageStyle\":\"IMAGE\"},\"sections\":[{\"widgets\":[{\"keyValue\":{\"topLabel\":\"${CIRCLE_TAG}\",\"content\":\"Credits - ${CIRCLE_USERNAME}\"}}]},{\"widgets\":[{\"buttons\":[{\"textButton\":{\"text\":\"DETAILS\",\"onClick\":{\"openLink\":{\"url\":\"${CIRCLE_BUILD_URL}\"}}}}]}]}]}]}" \
+            "$CHAT_WEBHOOK"
 
 workflows:
   version: 2

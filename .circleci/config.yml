@@ -2,7 +2,6 @@
 version: 2.1
 orbs:
   snyk: snyk/snyk@1.7.0
-orbs:
   ansible-playbook: orbss/ansible-playbook@0.0.5
 jobs:
   build_and_push:

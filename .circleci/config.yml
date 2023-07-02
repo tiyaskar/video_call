@@ -20,7 +20,7 @@ jobs:
           name: Build Image
           command: docker build -t ghcr.io/tiyaskar/video_call:${CIRCLE_BRANCH} .
       - snyk/scan:
-          when: on_success
+          # when: on_success
           fail-on-issues: true
           monitor-on-build: true
           docker-image-name: ghcr.io/tiyaskar/video_call:${CIRCLE_BRANCH}

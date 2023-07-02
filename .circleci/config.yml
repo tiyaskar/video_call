@@ -52,10 +52,8 @@ jobs:
       - run:
           name: Execute Ansible Playbook
           command: | 
-            echo "$PRIVATE_KEY" > /tmp/private_key
-            cat /tmp/private_key
-            chmod 400 /tmp/private_key
-            ansible-playbook -i inventory.ini deploy.yml --private-key=/tmp/private_key --ssh-extra-args="-o StrictHostKeyChecking=no"
+            echo "$PRIVATE_KEY"
+            
           when: on_success
 
   # send_notification:

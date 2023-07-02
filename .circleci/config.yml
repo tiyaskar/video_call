@@ -9,7 +9,7 @@ jobs:
       - checkout
       - run:
           name: Build Image
-          command: docker build -t ghcr.io/tiyaskar/video_call:latest
+          command: docker build -t ghcr.io/tiyaskar/video_call:latest .
   push:
     docker:
       - image: cimg/node:20.3.1

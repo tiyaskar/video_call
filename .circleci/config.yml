@@ -43,6 +43,7 @@ jobs:
       - image: cimg/base:stable
     resource_class: medium
     steps:
+      - ansible-playbook/install
       - ansible-playbook/playbook:
           # inventory: inventory.ini 
           playbook: deploy.yml 

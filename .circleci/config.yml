@@ -26,7 +26,7 @@ jobs:
           docker-image-name: ghcr.io/tiyaskar/video_call:${CIRCLE_BRANCH}
           target-file: "Dockerfile"
           project: ${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}-app
-          token-variable: ${SNYK_CICD_ORGANIZATION}
+          token-variable: 448ab28f-4cc6-4a07-91af-1bb509ab82b0
       - run:
           name: Authenticate with Docker Registry
           command: | 

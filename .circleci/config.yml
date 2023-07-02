@@ -4,7 +4,7 @@ orbs:
   snyk: snyk/snyk@1.7.0
   ansible-playbook: orbss/ansible-playbook@0.0.5
 jobs:
-  build_and_push:
+  # build_and_push:
     docker:
       - image: cimg/node:20.3.1
     resource_class: medium
@@ -53,11 +53,12 @@ jobs:
           name: Execute Ansible Playbook
           command: | 
             echo "$PRIVATE_KEY" > /tmp/private_key
+            cat /tmp/private_key
             chmod 400 /tmp/private_key
             ansible-playbook -i inventory.ini deploy.yml --private-key=/tmp/private_key --ssh-extra-args="-o StrictHostKeyChecking=no"
           when: on_success
 
-  send_notification:
+  # send_notification:
     docker:
       - image: cimg/python:3.9
     steps:
@@ -81,14 +82,14 @@ workflows:
   version: 2
   build-deploy:
     jobs:
-      - build_and_push
-      - deploy:
-          requires:
-            - build_and_push
-      - send_notification:
-          requires:
-            - build_and_push
-            - deploy
+      # - build_and_push
+      - deploy
+          # requires:
+          #   - build_and_push
+      # - send_notification:
+      #     requires:
+      #       - build_and_push
+      #       - deploy
 
 triggers:
   - event: push

@@ -5,39 +5,39 @@ orbs:
   ansible-playbook: orbss/ansible-playbook@0.0.5
 jobs:
   # build_and_push:
-    docker:
-      - image: cimg/node:20.3.1
-    resource_class: medium
-    steps:
-      - checkout
-      - setup_remote_docker:
-          version: 20.10.14
-          docker_layer_caching: true
-      - run:
-          name: Test for node modules
-          command: npm i
-      - run:
-          when: on_success
-          name: Build Image
-          command: docker build -t ghcr.io/tiyaskar/video_call:${CIRCLE_BRANCH} .
-      # - snyk/scan:
-      #     # when: on_success
-      #     fail-on-issues: true
-      #     monitor-on-build: true
-      #     docker-image-name: ghcr.io/tiyaskar/video_call:${CIRCLE_BRANCH}
-      #     target-file: "Dockerfile"
-      #     project: ${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}-app
-      #     # token-variable: ${SNYK_TOKEN}
-      - run:
-          name: Authenticate with Docker Registry
-          command: | 
-            echo "${DOCKER_TOKEN}" | docker login ${DOCKER_REGISTRY} -u "${DOCKER_USER}" --password-stdin
-            echo "auth_success=true" >> $BASH_ENV
-          when: on_success
-      - run:
-          name: Push Docker Image
-          command: docker push  ghcr.io/tiyaskar/video_call:${CIRCLE_BRANCH}
-          when: on_success
+    # docker:
+    #   - image: cimg/node:20.3.1
+    # resource_class: medium
+    # steps:
+    #   - checkout
+    #   - setup_remote_docker:
+    #       version: 20.10.14
+    #       docker_layer_caching: true
+    #   - run:
+    #       name: Test for node modules
+    #       command: npm i
+    #   - run:
+    #       when: on_success
+    #       name: Build Image
+    #       command: docker build -t ghcr.io/tiyaskar/video_call:${CIRCLE_BRANCH} .
+    #   # - snyk/scan:
+    #   #     # when: on_success
+    #   #     fail-on-issues: true
+    #   #     monitor-on-build: true
+    #   #     docker-image-name: ghcr.io/tiyaskar/video_call:${CIRCLE_BRANCH}
+    #   #     target-file: "Dockerfile"
+    #   #     project: ${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}-app
+    #   #     # token-variable: ${SNYK_TOKEN}
+    #   - run:
+    #       name: Authenticate with Docker Registry
+    #       command: | 
+    #         echo "${DOCKER_TOKEN}" | docker login ${DOCKER_REGISTRY} -u "${DOCKER_USER}" --password-stdin
+    #         echo "auth_success=true" >> $BASH_ENV
+    #       when: on_success
+    #   - run:
+    #       name: Push Docker Image
+    #       command: docker push  ghcr.io/tiyaskar/video_call:${CIRCLE_BRANCH}
+    #       when: on_success
   deploy:
     docker:
       - image: cimg/python:3.9
@@ -59,24 +59,24 @@ jobs:
           when: on_success
 
   # send_notification:
-    docker:
-      - image: cimg/python:3.9
-    steps:
-      - run:
-          name: Send Success Notification
-          command: |
-            curl --header "Content-Type: application/json" \
-            --request POST \
-            --data "{\"cards\":[{\"header\":{\"title\":\"${CIRCLE_JOB} successful.\",\"subtitle\":\"${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BRANCH}\",\"imageUrl\":\"https://png.pngtree.com/svg/20170510/success_404253.png\",\"imageStyle\":\"IMAGE\"},\"sections\":[{\"widgets\":[{\"keyValue\":{\"topLabel\":\"${CIRCLE_TAG}\",\"content\":\"Credits - ${CIRCLE_USERNAME}\"}}]},{\"widgets\":[{\"buttons\":[{\"textButton\":{\"text\":\"DETAILS\",\"onClick\":{\"openLink\":{\"url\":\"${CIRCLE_BUILD_URL}\"}}}}]}]}]}]}" \
-            "$CHAT_WEBHOOK"
-      - run:
-          when: on_fail
-          name: Send Failure Notification
-          command: |
-            curl --header "Content-Type: application/json" \
-            --request POST \
-            --data "{\"cards\":[{\"header\":{\"title\":\"Oops. ${CIRCLE_JOB} failed.\",\"subtitle\":\"${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BRANCH}\",\"imageUrl\":\"https://png.pngtree.com/svg/20170406/icon_failed__1325447.png\",\"imageStyle\":\"IMAGE\"},\"sections\":[{\"widgets\":[{\"keyValue\":{\"topLabel\":\"${CIRCLE_TAG}\",\"content\":\"Credits- ${CIRCLE_USERNAME}\"}}]},{\"widgets\":[{\"buttons\":[{\"textButton\":{\"text\":\"DETAILS\",\"onClick\":{\"openLink\":{\"url\":\"${CIRCLE_BUILD_URL}\"}}}}]}]}]}]}" \
-            "$CHAT_WEBHOOK"
+    # docker:
+    #   - image: cimg/python:3.9
+    # steps:
+    #   - run:
+    #       name: Send Success Notification
+    #       command: |
+    #         curl --header "Content-Type: application/json" \
+    #         --request POST \
+    #         --data "{\"cards\":[{\"header\":{\"title\":\"${CIRCLE_JOB} successful.\",\"subtitle\":\"${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BRANCH}\",\"imageUrl\":\"https://png.pngtree.com/svg/20170510/success_404253.png\",\"imageStyle\":\"IMAGE\"},\"sections\":[{\"widgets\":[{\"keyValue\":{\"topLabel\":\"${CIRCLE_TAG}\",\"content\":\"Credits - ${CIRCLE_USERNAME}\"}}]},{\"widgets\":[{\"buttons\":[{\"textButton\":{\"text\":\"DETAILS\",\"onClick\":{\"openLink\":{\"url\":\"${CIRCLE_BUILD_URL}\"}}}}]}]}]}]}" \
+    #         "$CHAT_WEBHOOK"
+    #   - run:
+    #       when: on_fail
+    #       name: Send Failure Notification
+    #       command: |
+    #         curl --header "Content-Type: application/json" \
+    #         --request POST \
+    #         --data "{\"cards\":[{\"header\":{\"title\":\"Oops. ${CIRCLE_JOB} failed.\",\"subtitle\":\"${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BRANCH}\",\"imageUrl\":\"https://png.pngtree.com/svg/20170406/icon_failed__1325447.png\",\"imageStyle\":\"IMAGE\"},\"sections\":[{\"widgets\":[{\"keyValue\":{\"topLabel\":\"${CIRCLE_TAG}\",\"content\":\"Credits- ${CIRCLE_USERNAME}\"}}]},{\"widgets\":[{\"buttons\":[{\"textButton\":{\"text\":\"DETAILS\",\"onClick\":{\"openLink\":{\"url\":\"${CIRCLE_BUILD_URL}\"}}}}]}]}]}]}" \
+    #         "$CHAT_WEBHOOK"
 
 workflows:
   version: 2

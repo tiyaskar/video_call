@@ -84,12 +84,6 @@ workflows:
           requires:
             - build_and_push
             - deploy
-          filters:
-            branches:
-              only: master
-            outcomes:
-              - success
-              - fail
 
 triggers:
   - event: push

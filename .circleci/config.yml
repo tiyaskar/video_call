@@ -45,15 +45,14 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Show Ansible Version
+          name: Install Ansible Version
           command: |
             sudo apt-get update
             sudo apt-get install -y ansible
-            ansible --version
       - run:
           name: Execute Ansible Playbook
           command: | 
-            echo "$SSH_PRIVATE_KEY" > /tmp/private_key
+            echo "$PRIVATE_KEY" > /tmp/private_key
             chmod 400 /tmp/private_key
             ansible-playbook -i inventory.ini deploy.yml --private-key=/tmp/private_key --ssh-extra-args="-o StrictHostKeyChecking=no"
           when: on_success

@@ -2,6 +2,8 @@
 version: 2.1
 # orbs:
 #   snyk: snyk/snyk@1.7.0
+orbs:
+  ansible: orbss/ansible@0.2.3
 jobs:
   build_and_push:
     docker:
@@ -39,21 +41,21 @@ jobs:
           when: on_success
   deploy:
     docker:
-      - image: cimg/python:3.9
+      - image: tomonorimatsumura/ubuntu18-ansible:apt
     resource_class: medium
     steps:
       - checkout
       - run:
-          name: Install Ansible
+          name: Show Ansible Version
           command: |
-            sudo apt-get update
-            sudo apt-get install -y ansible
+            ansible --version
       - run:
           name: Execute Ansible Playbook
           command: | 
             echo "$SSH_PRIVATE_KEY" > /tmp/private_key
             chmod 400 /tmp/private_key
             anisible-playbook -i inventory.ini deploy.yml --private-key=/tmp/private_key --ssh-extra-args="-o StrictHostKeyChecking=no"
+          when: on_success
   send_notification:
     docker:
       - image: cimg/python:3.9

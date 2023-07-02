@@ -2,7 +2,7 @@
 version: 2.1
 
 jobs:
-  build:
+  build_and_push:
     docker:
       - image: cimg/node:20.3.1
     steps:
@@ -10,32 +10,27 @@ jobs:
       - setup_remote_docker:
           version: 20.10.14
           docker_layer_caching: true
-
       - run:
           name: Build Image
-          command: docker build -t ghcr.io/tiyaskar/video_call:latest .
-  push:
-    docker:
-      - image: cimg/node:20.3.1
-    steps:
-      - checkout
-      - setup_remote_docker:
-          version: 20.10.14
-          docker_layer_caching: true
+          command: docker build -t ghcr.io/tiyaskar/video_call:${CIRCLE_BRANCH} .
       - run:
-          name: Push Image to github
+          name: Authenticate with Docker Registry
           command: |
-            docker login ghcr.io -u $DOCKER_USER -p $DOCKER_TOKEN
-            docker push ghcr.io/tiyaskar/video_call:latest
+            echo "${DOCKER_TOKEN}" | docker login -u "${DOCKER_USER}" --password-stdin
+            echo "auth_success=true" >> $BASH_ENV
+      - run:
+          name: Push Docker Image
+          command: docker push  ghcr.io/tiyaskar/video_call:${CIRCLE_BRANCH}
+          when: << pipeline.parameters.auth_success == 'true' >>
 
 workflows:
   version: 2
   build-deploy:
     jobs:
-      - build
-      - push:
-          requires:
-            - build
+      - build_and_push
+      # - push:
+      #     requires:
+      #       - build
 
 triggers:
   - event: push

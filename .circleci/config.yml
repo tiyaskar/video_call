@@ -19,14 +19,15 @@ jobs:
           name: Push Image to github
           command: docker push ghcr.io/tiyaskar/video_call:latest
 
-
 workflows:
-  build-deploys:
+  version: 2
+  build-deploy:
     jobs:
       - build
       - push:
-          require:
+          requires:
             - build
-  triggers:
-    - event: push
-      branch: master
+
+triggers:
+  - event: push
+    branch: master

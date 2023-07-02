@@ -21,7 +21,7 @@ jobs:
       - run:
           name: Push Docker Image
           command: docker push  ghcr.io/tiyaskar/video_call:${CIRCLE_BRANCH}
-          when: $auth_success
+          when: on_success
 
 workflows:
   version: 2

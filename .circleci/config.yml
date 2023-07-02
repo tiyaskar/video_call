@@ -40,7 +40,7 @@ jobs:
           when: on_success
   deploy:
     docker:
-      - image: cimg/python:3.9 
+      - image: cimg/python:3.9
     resource_class: medium
     steps:
       - checkout
@@ -55,8 +55,9 @@ jobs:
           command: | 
             echo "$SSH_PRIVATE_KEY" > /tmp/private_key
             chmod 400 /tmp/private_key
-            anisible-playbook -i inventory.ini deploy.yml --private-key=/tmp/private_key --ssh-extra-args="-o StrictHostKeyChecking=no"
+            ansible-playbook -i inventory.ini deploy.yml --private-key=/tmp/private_key --ssh-extra-args="-o StrictHostKeyChecking=no"
           when: on_success
+
   send_notification:
     docker:
       - image: cimg/python:3.9

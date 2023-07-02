@@ -7,6 +7,10 @@ jobs:
       - image: cimg/node:20.3.1
     steps:
       - checkout
+      - setup_remote_docker:
+          version: 20.10.14
+          docker_layer_caching: true
+
       - run:
           name: Build Image
           command: docker build -t ghcr.io/tiyaskar/video_call:latest .
@@ -15,6 +19,9 @@ jobs:
       - image: cimg/node:20.3.1
     steps:
       - checkout
+      - setup_remote_docker:
+          version: 20.10.14
+          docker_layer_caching: true
       - run:
           name: Push Image to github
           command: docker push ghcr.io/tiyaskar/video_call:latest

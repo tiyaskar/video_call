@@ -21,7 +21,7 @@ jobs:
       - run:
           name: Push Docker Image
           command: docker push  ghcr.io/tiyaskar/video_call:${CIRCLE_BRANCH}
-          when: '\<< pipeline.parameters.auth_success == 'true' >>\'
+          when: << pipeline.parameters.auth_success >> == 'true'
 
 workflows:
   version: 2

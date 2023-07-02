@@ -24,7 +24,9 @@ jobs:
           docker_layer_caching: true
       - run:
           name: Push Image to github
-          command: docker push ghcr.io/tiyaskar/video_call:latest
+          command: |
+            docker login ghcr.io -u $DOCKER_USER -p $DOCKER_TOKEN
+            docker push ghcr.io/tiyaskar/video_call:latest
 
 workflows:
   version: 2

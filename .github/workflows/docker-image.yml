@@ -71,8 +71,6 @@ jobs:
         with:
           image: ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/}
           args: --file=Dockerfile --severity-threshold=high --sarif-file-output=snyk.sarif
-        env:
-          SNYK_TOKEN: 448ab28f-4cc6-4a07-91af-1bb509ab82b0
 
       - name: Upload Snyk report as sarif
         uses: github/codeql-action/upload-sarif@v2

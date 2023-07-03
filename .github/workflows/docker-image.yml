@@ -1,0 +1,71 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      
+      - name: Install dependencies
+        run: npm i
+      
+      - name: Build Image
+        run: |
+          docker build -t ghcr.io/tiyaskar/video_call:${{ github.ref }} .
+      
+      - name: Authenticate with Docker Registry
+        run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login ${DOCKER_REGISTRY} -u "${{ secrets.DOCKER_USER }}" --password-stdin
+      
+      - name: Push Docker Image
+        run: docker push ghcr.io/tiyaskar/video_call:${{ github.ref }}
+
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
+      
+#       - name: Set up Python
+#         uses: actions/setup-python@v2
+#         with:
+#           python-version: '3.9'
+      
+#       - name: Install Ansible
+#         run: |
+#           sudo apt-get update
+#           sudo apt-get install -y ansible
+      
+#       - name: Execute Ansible Playbook
+#         run: |
+#           echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/private_key
+#           chmod 400 /tmp/private_key
+#           ansible-playbook -i inventory.ini deploy.yml --private-key=/tmp/private_key --ssh-extra-args="-o StrictHostKeyChecking=no"
+
+#   send_notification:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Send Success Notification
+#         run: |
+#           curl --header "Content-Type: application/json" \
+#           --request POST \
+#           --data "{\"cards\":[{\"header\":{\"title\":\"Build and Deploy successful.\",\"subtitle\":\"${{ github.repository }}-${{ github.ref }}\",\"imageUrl\":\"https://png.pngtree.com/svg/20170510/success_404253.png\",\"imageStyle\":\"IMAGE\"},\"sections\":[{\"widgets\":[{\"keyValue\":{\"topLabel\":\"${{ github.tag }}\",\"content\":\"Credits - ${{ github.actor }}\"}}]},{\"widgets\":[{\"buttons\":[{\"textButton\":{\"text\":\"DETAILS\",\"onClick\":{\"openLink\":{\"url\":\"${{ github.run_url }}\"}}}}]}]}]}]}" \
+#           ${{ secrets.CHAT_WEBHOOK }}
+      
+#       - name: Send Failure Notification
+#         if: failure()
+#         run: |
+#           curl --header "Content-Type: application/json" \
+#           --request POST \
+#           --data "{\"cards\":[{\"header\":{\"title\":\"Oops. Build and Deploy failed.\",\"subtitle\":\"${{ github.repository }}-${{ github.ref }}\",\"imageUrl\":\"https://png.pngtree.com/svg/20170406/icon_failed__1325447.png\",\"imageStyle\":\"IMAGE\"},\"sections\":[{\"widgets\":[{\"keyValue\":{\"topLabel\":\"${{ github.tag }}\",\"content\":\"Credits- ${{ github.actor }}\"}}]},{\"widgets\":[{\"buttons\":[{\"textButton\":{\"text\":\"DETAILS\",\"onClick\":{\"openLink\":{\"url\":\"${{ github.run_url }}\"}}}}]}]}]}]}" \
+#           ${{ secrets.CHAT_WEBHOOK }}

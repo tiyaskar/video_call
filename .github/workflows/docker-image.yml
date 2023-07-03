@@ -69,11 +69,14 @@ jobs:
           registry: ghcr.io
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_TOKEN }}
+      
+      - name: Image Pull
+        run: docker pull ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/}
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:master
+          image-ref: ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/}
           format: 'sarif'
           output: 'trivy-results.sarif'
   

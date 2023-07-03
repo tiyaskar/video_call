@@ -70,25 +70,18 @@ jobs:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Run Trivy image scanner
-        uses: aquasecurity/trivy-action@0.5.1
-        timeout-minutes: 10
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
         with:
-          scan-type: image
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-          image-ref: ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:master
-          format: sarif
-          output: report.sarif
-          ignore-unfixed: true
-          hide-progress: false
-          security-checks: vuln
-          timeout: 10m0s
-      
-      - name: Upload Trivy report as sarif
+          image-ref: ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+  
+      - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
+        if: always()
         with:
-          sarif_file: report.sarif
+          sarif_file: 'trivy-results.sarif'
 
       # - name: Send Trivy Report via Email
       #   uses: dawidd6/action-send-mail@v2

@@ -52,28 +52,35 @@ jobs:
         if: success()
   
   scan_docker_image:
+    needs: [build_and_push]
     runs-on: ubuntu-latest
-    needs: [ build_and_push ]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+      - name: Install Trivy
+        run: |
+          wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_$(uname | awk '{print tolower($0)}')_amd64.deb
+          sudo dpkg -i trivy_$(uname | awk '{print tolower($0)}')_amd64.deb
+      
+      - name: Scan Docker Image
+        run: |
+          trivy image ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/}
 
-      - name: Scan Docker image
-        uses: snyk/actions/docker@master
-        continue-on-error: true
-        with:
-          image: ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/}
-          args: --file=Dockerfile --severity-threshold=high --sarif-file-output=snyk.sarif
-
-      - name: Upload Snyk report as sarif
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: snyk.sarif
+      # - name: Send Trivy Report via Email
+      #   uses: dawidd6/action-send-mail@v2
+      #   with:
+      #     server_address: smtp.sendgrid.net
+      #     server_port: 587
+      #     username: ${{ secrets.SENDGRID_USERNAME }}
+      #     password: ${{ secrets.SENDGRID_PASSWORD }}
+      #     subject: Trivy Scan Report
+      #     body: |
+      #       Hi,
+            
+      #       Please find attached the Trivy scan report for the ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/} image.
+          
+      #     attachments: trivy_report.csv
+      #     from: your-email@example.com
+      #     to: recipient-email@example.com
       

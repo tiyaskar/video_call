@@ -72,23 +72,28 @@ jobs:
 
       - name: Scan Docker Image
         run: |
-          trivy image --format csv --output ${{ github.event.repository.name }}.csv ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/}
+          trivy image --format template --template "@contrib/sarif.tpl" -o report.sarif  ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/}
         if: success()
-
-      - name: Send Trivy Report via Email
-        uses: dawidd6/action-send-mail@v2
+      
+      - name: Upload Trivy report as sarif
+        uses: github/codeql-action/upload-sarif@v2
         with:
-          server_address: email-smtp.us-east-1.amazonaws.com
-          server_port: 587
-          username: ${{ secrets.HOST_USER }}
-          password: ${{ secrets.HOST_PASS }}
-          subject: Trivy Scan Report
-          body: |
-            Hi Team,
+          sarif_file: report.sarif
+
+      # - name: Send Trivy Report via Email
+      #   uses: dawidd6/action-send-mail@v2
+      #   with:
+      #     server_address: email-smtp.us-east-1.amazonaws.com
+      #     server_port: 587
+      #     username: ${{ secrets.HOST_USER }}
+      #     password: ${{ secrets.HOST_PASS }}
+      #     subject: Trivy Scan Report
+      #     body: |
+      #       Hi Team,
             
-            Please find attached the Trivy scan report for the image in ${{ github.event.repository.name }}.
+      #       Please find attached the Trivy scan report for the image in ${{ github.event.repository.name }}.
           
-          attachments: ${{ github.event.repository.name }}.csv
-          from: noreply@notifications.phrazor.com
-          to: tiyas.kar@vphrase.com
+      #     attachments: ${{ github.event.repository.name }}.csv
+      #     from: noreply@notifications.phrazor.com
+      #     to: tiyas.kar@vphrase.com
       

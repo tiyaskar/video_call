@@ -1,2 +1,2 @@
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/tiyaskar/video_call/tree/master.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/tiyaskar/video_call/tree/master)
+[![Build and Deploy](https://github.com/tiyaskar/video_call/actions/workflows/docker-image.yml/badge.svg?branch=master)](https://github.com/tiyaskar/video_call/actions/workflows/docker-image.yml)
 # video_call

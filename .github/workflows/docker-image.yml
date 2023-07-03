@@ -23,6 +23,7 @@ jobs:
       - name: Build Image
         run: |
           docker build -t ghcr.io/tiyaskar/video_call:${GITHUB_REF##*/} .
+        if: success()
       
       - name: Authenticate with Docker Registry
         run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login ghcr.io -u "${{ secrets.DOCKER_USER }}" --password-stdin

@@ -6,45 +6,73 @@ on:
       - master
 
 jobs:
-  build_and_push:
+  pull_and_test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [ 14 ]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
       
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      - name: Setup Node environment:Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: ${{ matrix.node-version }}
       
-      - name: Install dependencies
-        run: npm i
+      - name: Test dependencies
+        run: npm ci
+  
+  build_and_push:
+    permissions:
+      id-token: write
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    needs: [ pull_and_test ]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_TOKEN }}
       
-      - name: Build Image
-        run: |
-          docker build -t ghcr.io/tiyaskar/video_call:${GITHUB_REF##*/} .
-        if: success()
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          tags: |
+            ${{ env.DOCKER_REGISTRY }}/${{ secrets.DOCKER_USER }}/${{ env.GITHUB_REPOSITORY }}:${GITHUB_REF##*/}
+
+      # # - name: Build Image
+      # #   run: |
+      # #     docker build -t ghcr.io/tiyaskar/video_call:${GITHUB_REF##*/} .
+      # #   if: success()
       
-      - name: Authenticate with Docker Registry
-        run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login ghcr.io -u "${{ secrets.DOCKER_USER }}" --password-stdin
+      # # - name: Authenticate with Docker Registry
+      # #   run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login ghcr.io -u "${{ secrets.DOCKER_USER }}" --password-stdin
       
-      - name: Push Docker Image
-        run: docker push ghcr.io/tiyaskar/video_call:${GITHUB_REF##*/}
+      # # - name: Push Docker Image
+      # #   run: docker push ghcr.io/tiyaskar/video_call:${GITHUB_REF##*/}
       
-      - name: Send Success Notification
-        run: |
-          curl --header "Content-Type: application/json" \
-          --request POST \
-          --data "{\"cards\":[{\"header\":{\"title\":\"Build and Deploy successful.\",\"subtitle\":\"${{ github.repository }}-${{ github.ref }}\",\"imageUrl\":\"https://png.pngtree.com/svg/20170510/success_404253.png\",\"imageStyle\":\"IMAGE\"},\"sections\":[{\"widgets\":[{\"keyValue\":{\"topLabel\":\"${{ github.tag }}\",\"content\":\"Credits - ${{ github.actor }}\"}}]},{\"widgets\":[{\"buttons\":[{\"textButton\":{\"text\":\"DETAILS\",\"onClick\":{\"openLink\":{\"url\":\"${{ github.run_url }}\"}}}}]}]}]}]}" \
-          ${{ secrets.CHAT_WEBHOOK }}
+      # - name: Send Success Notification
+      #   run: |
+      #     curl --header "Content-Type: application/json" \
+      #     --request POST \
+      #     --data "{\"cards\":[{\"header\":{\"title\":\"Build and Deploy successful.\",\"subtitle\":\"${{ github.repository }}-${{ github.ref }}\",\"imageUrl\":\"https://png.pngtree.com/svg/20170510/success_404253.png\",\"imageStyle\":\"IMAGE\"},\"sections\":[{\"widgets\":[{\"keyValue\":{\"topLabel\":\"${{ github.tag }}\",\"content\":\"Credits - ${{ github.actor }}\"}}]},{\"widgets\":[{\"buttons\":[{\"textButton\":{\"text\":\"DETAILS\",\"onClick\":{\"openLink\":{\"url\":\"${{ github.run_url }}\"}}}}]}]}]}]}" \
+      #     ${{ secrets.CHAT_WEBHOOK }}
       
-      - name: Send Failure Notification
-        if: failure()
-        run: |
-          curl --header "Content-Type: application/json" \
-          --request POST \
-          --data "{\"cards\":[{\"header\":{\"title\":\"Oops. Build and Deploy failed.\",\"subtitle\":\"${{ github.repository }}-${{ github.ref }}\",\"imageUrl\":\"https://png.pngtree.com/svg/20170406/icon_failed__1325447.png\",\"imageStyle\":\"IMAGE\"},\"sections\":[{\"widgets\":[{\"keyValue\":{\"topLabel\":\"${{ github.tag }}\",\"content\":\"Credits- ${{ github.actor }}\"}}]},{\"widgets\":[{\"buttons\":[{\"textButton\":{\"text\":\"DETAILS\",\"onClick\":{\"openLink\":{\"url\":\"${{ github.run_url }}\"}}}}]}]}]}]}" \
-          ${{ secrets.CHAT_WEBHOOK }}
+      # - name: Send Failure Notification
+      #   if: failure()
+      #   run: |
+      #     curl --header "Content-Type: application/json" \
+      #     --request POST \
+      #     --data "{\"cards\":[{\"header\":{\"title\":\"Oops. Build and Deploy failed.\",\"subtitle\":\"${{ github.repository }}-${{ github.ref }}\",\"imageUrl\":\"https://png.pngtree.com/svg/20170406/icon_failed__1325447.png\",\"imageStyle\":\"IMAGE\"},\"sections\":[{\"widgets\":[{\"keyValue\":{\"topLabel\":\"${{ github.tag }}\",\"content\":\"Credits- ${{ github.actor }}\"}}]},{\"widgets\":[{\"buttons\":[{\"textButton\":{\"text\":\"DETAILS\",\"onClick\":{\"openLink\":{\"url\":\"${{ github.run_url }}\"}}}}]}]}]}]}" \
+      #     ${{ secrets.CHAT_WEBHOOK }}
 
 #   deploy:
 #     runs-on: ubuntu-latest

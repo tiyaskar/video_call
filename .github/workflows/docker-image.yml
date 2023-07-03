@@ -72,7 +72,7 @@ jobs:
 
       - name: Scan Docker Image
         run: |
-          trivy image ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/}
+          trivy image --format csv --output ${{ github.event.repository.name }}.csv ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/}
         if: success()
 
       - name: Send Trivy Report via Email
@@ -88,7 +88,7 @@ jobs:
             
             Please find attached the Trivy scan report for the image in ${{ github.event.repository.name }}.
           
-          attachments: trivy_report.csv
+          attachments: ${{ github.event.repository.name }}.csv
           from: noreply@notifications.phrazor.com
           to: tiyas.kar@vphrase.com
       

@@ -72,7 +72,7 @@ jobs:
 
       - name: Scan Docker Image
         run: |
-          trivy image --format template --template "@contrib/sarif.tpl" -o report.sarif  ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/}
+          trivy image --format sarif -o report.sarif ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/}
         if: success()
       
       - name: Upload Trivy report as sarif

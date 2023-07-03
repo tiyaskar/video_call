@@ -50,40 +50,32 @@ jobs:
       - name: Push Docker Image
         run: docker push ghcr.io/tiyaskar/video_call:${GITHUB_REF##*/}
         if: success()
-      
-      # - name: Send Success Notification
-      #   run: |
-      #     curl --header "Content-Type: application/json" \
-      #     --request POST \
-      #     --data "{\"cards\":[{\"header\":{\"title\":\"Build and Deploy successful.\",\"subtitle\":\"${{ github.repository }}-${{ github.ref }}\",\"imageUrl\":\"https://png.pngtree.com/svg/20170510/success_404253.png\",\"imageStyle\":\"IMAGE\"},\"sections\":[{\"widgets\":[{\"keyValue\":{\"topLabel\":\"${{ github.tag }}\",\"content\":\"Credits - ${{ github.actor }}\"}}]},{\"widgets\":[{\"buttons\":[{\"textButton\":{\"text\":\"DETAILS\",\"onClick\":{\"openLink\":{\"url\":\"${{ github.run_url }}\"}}}}]}]}]}]}" \
-      #     ${{ secrets.CHAT_WEBHOOK }}
-      
-      # - name: Send Failure Notification
-      #   if: failure()
-      #   run: |
-      #     curl --header "Content-Type: application/json" \
-      #     --request POST \
-      #     --data "{\"cards\":[{\"header\":{\"title\":\"Oops. Build and Deploy failed.\",\"subtitle\":\"${{ github.repository }}-${{ github.ref }}\",\"imageUrl\":\"https://png.pngtree.com/svg/20170406/icon_failed__1325447.png\",\"imageStyle\":\"IMAGE\"},\"sections\":[{\"widgets\":[{\"keyValue\":{\"topLabel\":\"${{ github.tag }}\",\"content\":\"Credits- ${{ github.actor }}\"}}]},{\"widgets\":[{\"buttons\":[{\"textButton\":{\"text\":\"DETAILS\",\"onClick\":{\"openLink\":{\"url\":\"${{ github.run_url }}\"}}}}]}]}]}]}" \
-      #     ${{ secrets.CHAT_WEBHOOK }}
+  
+  scan_docker_image:
+    runs-on: ubuntu-latest
+    needs: [ build_and_push ]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
 
-#   deploy:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v2
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Scan Docker image
+        uses: snyk/actions/docker@master
+        continue-on-error: true
+        with:
+          image: ghcr.io/${{ github.actor }}/video_call:${GITHUB_REF##*/}
+          args: --file=Dockerfile --severity-threshold=high --sarif-file-output=snyk.sarif
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Upload Snyk report as sarif
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: snyk.sarif
       
-#       - name: Set up Python
-#         uses: actions/setup-python@v2
-#         with:
-#           python-version: '3.9'
-      
-#       - name: Install Ansible
-#         run: |
-#           sudo apt-get update
-#           sudo apt-get install -y ansible
-      
-#       - name: Execute Ansible Playbook
-#         run: |
-#           echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/private_key
-#           chmod 400 /tmp/private_key
-#           ansible-playbook -i inventory.ini deploy.yml --private-key=/tmp/private_key --ssh-extra-args="-o StrictHostKeyChecking=no"

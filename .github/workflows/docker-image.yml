@@ -6,53 +6,53 @@ on:
       - master
 
 jobs:
-  pull_and_test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [ 14 ]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+  # pull_and_test:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       node-version: [ 14 ]
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
       
-      - name: Setup Node environment:Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
+  #     - name: Setup Node environment:Node.js ${{ matrix.node-version }}
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: ${{ matrix.node-version }}
       
-      - name: Test dependencies
-        run: npm ci
+  #     - name: Test dependencies
+  #       run: npm ci
   
-  build_and_push:
-    permissions:
-      id-token: write
-      contents: read
-      packages: write
-    runs-on: ubuntu-latest
-    needs: [ pull_and_test ]
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
+  # build_and_push:
+  #   permissions:
+  #     id-token: write
+  #     contents: read
+  #     packages: write
+  #   runs-on: ubuntu-latest
+  #   needs: [ pull_and_test ]
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v2
 
-      - name: Build Image
-        run: |
-          docker build -t ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/} .
-        if: success()
+  #     - name: Build Image
+  #       run: |
+  #         docker build -t ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/} .
+  #       if: success()
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+  #     - name: Log in to the Container registry
+  #       uses: docker/login-action@v2
+  #       with:
+  #         registry: ghcr.io
+  #         username: ${{ secrets.DOCKER_USER }}
+  #         password: ${{ secrets.DOCKER_TOKEN }}
       
       
-      - name: Push Docker Image
-        run: docker push ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/}
-        if: success()
+  #     - name: Push Docker Image
+  #       run: docker push ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/}
+  #       if: success()
   
   scan_docker_image:
-    needs: [build_and_push]
+    # needs: [build_and_push]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -60,12 +60,14 @@ jobs:
 
       - name: Install Trivy
         run: |
-          wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_$(uname | awk '{print tolower($0)}')_amd64.deb
-          sudo dpkg -i trivy_$(uname | awk '{print tolower($0)}')_amd64.deb
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.18.3/trivy_0.18.3_Linux-64bit.deb
+          sudo dpkg -i trivy_0.18.3_Linux-64bit.deb
+        
       
       - name: Scan Docker Image
         run: |
           trivy image ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/}
+        if: success()
 
       # - name: Send Trivy Report via Email
       #   uses: dawidd6/action-send-mail@v2

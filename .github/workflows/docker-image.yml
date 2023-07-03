@@ -36,7 +36,7 @@ jobs:
 
       - name: Build Image
         run: |
-          docker build -t ghcr.io/tiyaskar/video_call:${GITHUB_REF##*/} .
+          docker build -t ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/} .
         if: success()
 
       - name: Log in to the Container registry
@@ -48,7 +48,7 @@ jobs:
       
       
       - name: Push Docker Image
-        run: docker push ghcr.io/tiyaskar/video_call:${GITHUB_REF##*/}
+        run: docker push ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/}
         if: success()
   
   scan_docker_image:
@@ -69,7 +69,7 @@ jobs:
         uses: snyk/actions/docker@master
         continue-on-error: true
         with:
-          image: ghcr.io/${{ github.actor }}/video_call:${GITHUB_REF##*/}
+          image: ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/}
           args: --file=Dockerfile --severity-threshold=high --sarif-file-output=snyk.sarif
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}

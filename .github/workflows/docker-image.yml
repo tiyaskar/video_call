@@ -46,7 +46,7 @@ jobs:
         with:
           push: true
           tags: |
-            ghcr.io/${{ secrets.DOCKER_USER }}/${GITHUB_REPOSITORY#*/}:${GITHUB_REF##*/}
+            ghcr.io/${{ secrets.DOCKER_USER }}/video_call:${GITHUB_REF##*/}
         if: success()
       # # - name: Build Image
       # #   run: |

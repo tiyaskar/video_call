@@ -70,10 +70,20 @@ jobs:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Scan Docker Image
-        run: |
-          trivy image --format sarif -o report.sarif ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/}
-        if: success()
+      - name: Run Trivy image scanner
+        uses: aquasecurity/trivy-action@0.5.1
+        timeout-minutes: 10
+        with:
+          scan-type: image
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+          image-ref: ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${GITHUB_REF##*/}
+          format: sarif
+          output: report.sarif
+          ignore-unfixed: true
+          hide-progress: false
+          security-checks: vuln
+          timeout: 10m0s
       
       - name: Upload Trivy report as sarif
         uses: github/codeql-action/upload-sarif@v2
